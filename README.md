@@ -1,4 +1,7 @@
-# CANIDVisionDevelopment environment for the machine learning tools used in CANID. 
+# CANIDVision
+
+Development environment for the machine learning tools used in CANID. 
+
 As of now, the running enviornment is slated to be just:
 The models folder, forward.py, models.py, and workspace.py, 
 Intentions are as follows:

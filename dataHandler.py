@@ -32,25 +32,26 @@ class FrameDataset(Dataset):
             return 0
         videoData = os.fsencode(path+"/data/video_data/")
         for labelobj in os.listdir(videoData):
-            label = str(labelobj)
-            os.mkdir(path+"/data/build/"+label+"/")
-            for video in os.listdir(path+"/data/video_data/"+label):
-                dirName = path+"/data/build/" + label + "/" + video[0:-4]
-                os.mkdir(dirName)
-                probe = ffmpeg.probe(path+"/data/video_data/"+label+"/"+video)
-                video_info = next(stream for stream in probe['streams'] if stream['codec_type'] == 'video')
-                duration = float(video_info['duration'])
-                # Calculate intervals for frame extraction
-                intervals = np.linspace(0, duration, numFrames, endpoint=False)
-                for i, interval in enumerate(intervals):
-                    output_file = f"frame_{i+1}.bmp"  # Define output frame filename
-                    # Extract frame
-                    (
-                    ffmpeg
-                    .input(path+"/data/video_data/"+label+"/"+video, ss=interval)  # Seek to position
-                    .output(path+"/data/build/"+label+"/"+video[0:-4]+"/"+output_file, vframes=1)  # Extract one frame
-                    .run(capture_stdout=True, capture_stderr=True)
-                    )
+            label = str(labelobj)[2:-1]
+            if label.isalnum():
+                os.mkdir(path+"/data/build/"+label+"/")
+                for video in os.listdir(path+"/data/video_data/"+label):
+                    dirName = path+"/data/build/" + label + "/" + str(video)[0:-4]
+                    os.mkdir(dirName)
+                    probe = ffmpeg.probe(path+"/data/video_data/"+label+"/"+str(video))
+                    video_info = next(stream for stream in probe['streams'] if stream['codec_type'] == 'video')
+                    duration = float(video_info['duration'])
+                    # Calculate intervals for frame extraction
+                    intervals = np.linspace(0, duration, numFrames, endpoint=False)
+                    for i, interval in enumerate(intervals):
+                        output_file = f"frame_{i+1}.bmp"  # Define output frame filename
+                        # Extract frame
+                        (
+                        ffmpeg
+                        .input(path+"/data/video_data/"+label+"/"+str(video), ss=interval)  # Seek to position
+                        .output(path+"/data/build/"+label+"/"+str(video)[0:-4]+"/"+output_file, vframes=1)  # Extract one frame
+                        .run(capture_stdout=True, capture_stderr=True)
+                        )
             progress = (os.listdir(videoData).index(labelobj)+1)/len(os.listdir(videoData)) * 100
             print("building... " + str(round(progress,4)) + "% complete")
         return 1
@@ -60,11 +61,12 @@ class FrameDataset(Dataset):
         vid_labels = []  # Stores the label indices corresponding to each frame
         image_data_dir = os.getcwd()+'/data/build/'
         for label in self.labels:
-            label_dir = os.path.join(image_data_dir, label)
-            for video in os.listdir(label_dir):
-                video_dir = os.path.join(label_dir, video)
-                vid_paths.append(video_dir)
-                vid_labels.append(self.label_to_idx[label])
+            if str(label).isalnum():
+                label_dir = os.path.join(image_data_dir, label)
+                for video in os.listdir(label_dir):
+                    video_dir = os.path.join(label_dir, video)
+                    vid_paths.append(video_dir)
+                    vid_labels.append(self.label_to_idx[label])
         return list(zip(vid_paths, vid_labels))
 
     def __getitem__(self, idx):

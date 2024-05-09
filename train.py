@@ -4,14 +4,21 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader, random_split
 import matplotlib.pyplot as plt
-from dataset import FrameDataset
+from dataHandler import FrameDataset
 from models import VideoClassifier
 import utils
     
 def train():
 
     #device config
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        device = 'cuda'
+    elif torch.backends.mps.is_built():
+        if torch.backends.mps.is_available():
+            device = 'mps'
+    else:
+        device = 'cpu'
+    print(f"Using device: {device}")
 
     #hyperparams
     num_classes = 101
@@ -21,13 +28,10 @@ def train():
     num_layers = 2
     hidden_size = 256
     num_epochs = 200
-    batch_size = 10
+    batch_size = 30
     learning_rate = 0.002
     train_split = 0.8
-
-    #readability stuff
-    if torch.cuda.is_available() == False:
-        print("cuda unavailable, running on cpu")
+    #output
     accuracies = []
     losses = []
 

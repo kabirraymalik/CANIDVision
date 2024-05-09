@@ -36,6 +36,7 @@ class learningUtils():
         axis[0].set_ylim([0,100])
         axis[0].set_title("accuracy vs time") 
         axis[1].plot(avgLoss)
+        axis[1].set_ylim([0,max(avgLoss)])
         axis[1].set_title("avg. loss vs time") 
         path = os.curdir+'/data/testdata.png'
         figure.savefig(path)
